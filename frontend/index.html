@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HarithaSethu Dashboard</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">HS</div>
+        <div>
+          <strong>HarithaSethu</strong>
+          <span>Environmental Intelligence</span>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a class="active" href="#">Dashboard</a>
+        <a href="#">Map View</a>
+        <a href="#">Change Detection</a>
+        <a href="#">Analytics</a>
+        <a href="#">Reports</a>
+        <a href="#">Alerts</a>
+        <a href="#">Settings</a>
+      </nav>
+
+      <section class="sidebar-panel">
+        <span>Selected Area</span>
+        <strong>Chakkittapara Grama Panchayat</strong>
+        <span>Kozhikode, Kerala</span>
+      </section>
+
+      <section class="version">HarithaSethu v1.0</section>
+    </aside>
+
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <h1>Chakkittapara Grama Panchayat</h1>
+          <p>Environmental Monitoring Dashboard</p>
+        </div>
+        <div class="period-controls">
+          <button type="button">May 2024</button>
+          <span>vs</span>
+          <button type="button">June 2024</button>
+          <button class="primary" type="button">Generate Report</button>
+        </div>
+      </header>
+
+      <section class="dashboard-grid">
+        <article class="panel map-panel span-4">
+          <h2>Satellite Image - May 2024</h2>
+          <div id="map-before" class="map-canvas fallback-map"></div>
+        </article>
+
+        <article class="panel map-panel span-4">
+          <h2>Satellite Image - June 2024</h2>
+          <div id="map-after" class="map-canvas fallback-map"></div>
+        </article>
+
+        <article class="panel map-panel span-4">
+          <h2>NDVI Change Detection <span>(May vs June)</span></h2>
+          <div id="map-change" class="map-canvas fallback-change">
+            <ol class="legend">
+              <li><i style="--c:#1a9850"></i> High Increase</li>
+              <li><i style="--c:#91cf60"></i> Moderate Increase</li>
+              <li><i style="--c:#fee08b"></i> No Change</li>
+              <li><i style="--c:#fc8d59"></i> Moderate Decrease</li>
+              <li><i style="--c:#d73027"></i> High Decrease</li>
+            </ol>
+          </div>
+        </article>
+
+        <aside class="side-stack">
+          <article class="panel metric-stack">
+            <h2>Summary <span>(Monthly Change)</span></h2>
+            <div class="metric-row danger">
+              <span>Green Cover</span>
+              <strong id="green-delta">-2%</strong>
+              <small>Area Change -18.4 ha</small>
+            </div>
+            <div class="metric-row danger">
+              <span>Water Bodies</span>
+              <strong id="water-delta">-4%</strong>
+              <small>Area Change -5.7 ha</small>
+            </div>
+            <div class="metric-row success">
+              <span>Built-up Area</span>
+              <strong id="built-delta">+1.5%</strong>
+              <small>Area Change +6.3 ha</small>
+            </div>
+            <div class="score">
+              <span>Environmental Score</span>
+              <strong id="score">--/100</strong>
+              <meter id="score-meter" min="0" max="100" value="0"></meter>
+            </div>
+          </article>
+
+          <article class="panel alerts">
+            <h2>Alerts <span>3 New Alerts</span></h2>
+            <div id="alerts-list"></div>
+          </article>
+        </aside>
+
+        <article class="panel map-panel span-4">
+          <h2>Change Detection - Built-up Expansion</h2>
+          <div id="map-buildup" class="map-canvas">
+            <ol class="legend">
+              <li><i style="--c:#FF4444"></i> New Construction</li>
+            </ol>
+          </div>
+        </article>
+
+        <article class="panel span-4">
+          <h2>New Buildings Detected</h2>
+          <div class="chip-grid">
+            <div></div><div></div><div></div><div></div>
+            <div></div><div></div><div></div><div></div>
+          </div>
+        </article>
+
+        <article class="panel span-4">
+          <h2>Changes by Category <span>(Monthly)</span></h2>
+          <div class="bar-chart">
+            <div class="bar negative" style="--v: 80"><span>-18.4 ha</span></div>
+            <div class="bar negative" style="--v: 34"><span>-5.7 ha</span></div>
+            <div class="bar positive" style="--v: 38"><span>+6.3 ha</span></div>
+            <div class="bar negative" style="--v: 14"><span>-1.2 ha</span></div>
+          </div>
+          <div class="chart-labels">
+            <span>Green Cover</span><span>Water Bodies</span><span>Built-up Area</span><span>Others</span>
+          </div>
+        </article>
+
+        <article class="panel span-4 report">
+          <h2>Monthly Report - June 2024</h2>
+          <ul id="report-list"></ul>
+        </article>
+
+        <article class="panel span-4 yearly">
+          <h2>Yearly Comparison <span>(June 2023 vs June 2024)</span></h2>
+          <div><span>Green Cover</span><strong class="danger-text">-5.6%</strong><em>-52.7 ha</em></div>
+          <div><span>Water Bodies</span><strong class="danger-text">-8.3%</strong><em>-11.3 ha</em></div>
+          <div><span>Built-up Area</span><strong class="success-text">+3.9%</strong><em>+16.8 ha</em></div>
+          <div><span>Environmental Score</span><strong>68/100</strong><em>-4 pts</em></div>
+        </article>
+
+        <article class="panel span-4 donut-panel">
+          <h2>NDVI Change <span>(Yearly)</span></h2>
+          <div class="donut-layout">
+            <div class="donut"></div>
+            <ol class="donut-legend">
+              <li><i style="--c:#1a9850"></i> High Increase <span>18.7%</span></li>
+              <li><i style="--c:#91cf60"></i> Moderate Increase <span>21.3%</span></li>
+              <li><i style="--c:#fee08b"></i> No Change <span>36.9%</span></li>
+              <li><i style="--c:#fc8d59"></i> Moderate Decrease <span>14.5%</span></li>
+              <li><i style="--c:#d73027"></i> High Decrease <span>8.6%</span></li>
+            </ol>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-graticule/Leaflet.Graticule.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>
