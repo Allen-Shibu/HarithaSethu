@@ -46,4 +46,4 @@ Authenticate Google Earth Engine first, then run:
 python gee/fetch_change.py
 ```
 
-That writes `data/output.json`, which the API reads automatically. Until the file exists, the API serves sample values matching the current project context.
+That writes `data/output.json`, which the API reads automatically. Until the file exists, the API serves sample values matching the current project context
