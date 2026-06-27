@@ -322,50 +322,27 @@ async function updateDashboard(beforeMonth, afterMonth) {
   if (selectAfter) selectAfter.disabled = true;
 
   try {
-    const query = `?before=${beforeMonth}&after=${afterMonth}`;
-    const [report, tiles, buildupData] = await Promise.all([
-      getJson(`/api/report${query}`),
-      getJson(`/api/tiles${query}`),
-      getJson(`/api/buildup${query}`),
-    ]);
-
-    // Update dynamic text in dashboard panels
-    const labelBefore = document.querySelector("#label-before");
-    const labelAfter = document.querySelector("#label-after");
-    const labelBeforeChange = document.querySelector("#label-before-change");
-    const labelAfterChange = document.querySelector("#label-after-change");
-    const labelBeforeBuildup = document.querySelector("#label-before-buildup");
-    const labelAfterBuildup = document.querySelector("#label-after-buildup");
-
-    const labelBeforeVal = getMonthLabel(beforeMonth);
-    const labelAfterVal = getMonthLabel(afterMonth);
-
-    if (labelBefore) labelBefore.textContent = labelBeforeVal;
-    if (labelAfter) labelAfter.textContent = labelAfterVal;
-    if (labelBeforeChange) labelBeforeChange.textContent = labelBeforeVal;
-    if (labelAfterChange) labelAfterChange.textContent = labelAfterVal;
-    if (labelBeforeBuildup) labelBeforeBuildup.textContent = labelBeforeVal;
-    if (labelAfterBuildup) labelAfterBuildup.textContent = labelAfterVal;
-
-    updateReport(report);
-    buildChipGrid(buildupData?.buildup);
-
-    const beforeTile = tiles.tiles?.true_color_before?.url;
-    const afterTile = tiles.tiles?.true_color_after?.url;
-    const changeTile = tiles.tiles?.ndvi_change?.url;
-    const constructionTile = tiles.tiles?.new_construction?.url;
-
-    if (mapBefore) updateMapTile(mapBefore, beforeTile);
-    if (mapAfter) updateMapTile(mapAfter, afterTile);
+    const data = await getJson(`/api/compare?monthA=${beforeMonth}&monthB=${afterMonth}`);
+    
+    // Update header labels
+    updateLabels(beforeMonth, afterMonth);
+    
+    // Update maps tile URLs
+    if (mapBefore) updateMapTile(mapBefore, data.tiles.before);
+    if (mapAfter) updateMapTile(mapAfter, data.tiles.after);
     
     if (mapChange) {
-      updateMapTile(mapChange, changeTile);
-      updateMapOverlay(mapChange, constructionTile);
+      updateMapTile(mapChange, data.tiles.ndvi_change);
+      updateMapOverlay(mapChange, data.tiles.new_construction);
     }
     
     if (mapBuildup) {
-      updateMapTile(mapBuildup, constructionTile);
+      updateMapTile(mapBuildup, data.tiles.new_construction);
     }
+    
+    // Update UI panels
+    updateDashboardUI(data, beforeMonth, afterMonth);
+    
   } catch (err) {
     console.error("Dashboard update failed:", err);
     alert(`Earth Engine comparison failed to load: ${err.message || err}`);
@@ -377,6 +354,294 @@ async function updateDashboard(beforeMonth, afterMonth) {
     if (selectBefore) selectBefore.disabled = false;
     if (selectAfter) selectAfter.disabled = false;
   }
+}
+
+function updateLabels(beforeMonth, afterMonth) {
+  const labelBefore = document.querySelector("#label-before");
+  const labelAfter = document.querySelector("#label-after");
+  const labelBeforeChange = document.querySelector("#label-before-change");
+  const labelAfterChange = document.querySelector("#label-after-change");
+  const labelBeforeBuildup = document.querySelector("#label-before-buildup");
+  const labelAfterBuildup = document.querySelector("#label-after-buildup");
+
+  const labelBeforeVal = getMonthLabel(beforeMonth);
+  const labelAfterVal = getMonthLabel(afterMonth);
+
+  if (labelBefore) labelBefore.textContent = labelBeforeVal;
+  if (labelAfter) labelAfter.textContent = labelAfterVal;
+  if (labelBeforeChange) labelBeforeChange.textContent = labelBeforeVal;
+  if (labelAfterChange) labelAfterChange.textContent = labelAfterVal;
+  if (labelBeforeBuildup) labelBeforeBuildup.textContent = labelBeforeVal;
+  if (labelAfterBuildup) labelAfterBuildup.textContent = labelAfterVal;
+}
+
+function updateDashboardUI(data, monthA, monthB) {
+  // 1. Environmental Score
+  const scoreEl = document.querySelector("#score");
+  if (scoreEl) scoreEl.textContent = `${data.stats.environmental_score}/100`;
+  const scoreMeter = document.querySelector("#score-meter");
+  if (scoreMeter) scoreMeter.value = data.stats.environmental_score;
+
+  // 2. Summary cards
+  const greenDelta = document.querySelector("#green-delta");
+  if (greenDelta) {
+    greenDelta.textContent = `${data.stats.green_cover.change >= 0 ? "+" : ""}${data.stats.green_cover.change.toFixed(1)}%`;
+    const greenSmall = greenDelta.nextElementSibling;
+    if (greenSmall) {
+      greenSmall.textContent = `Area Change -${data.stats.vegetation_loss_area_ha.toFixed(1)} ha`;
+    }
+  }
+
+  const waterDelta = document.querySelector("#water-delta");
+  if (waterDelta) {
+    waterDelta.textContent = `${data.stats.water.change >= 0 ? "+" : ""}${data.stats.water.change.toFixed(1)}%`;
+    const waterSmall = waterDelta.nextElementSibling;
+    if (waterSmall) {
+      const val = data.stats.water_change_area_ha;
+      waterSmall.textContent = `Area Change ${val >= 0 ? "+" : ""}${val.toFixed(1)} ha`;
+    }
+  }
+
+  const builtDelta = document.querySelector("#built-delta");
+  if (builtDelta) {
+    builtDelta.textContent = `${data.stats.built_up.change >= 0 ? "+" : ""}${data.stats.built_up.change.toFixed(1)}%`;
+    const builtSmall = builtDelta.nextElementSibling;
+    if (builtSmall) {
+      builtSmall.textContent = `Area Change +${data.stats.built_up_expansion_area_ha.toFixed(1)} ha`;
+    }
+  }
+
+  // 3. Alerts
+  buildAlerts(data.alerts || []);
+
+  // 4. Monthly Report
+  const reportTitle = document.querySelector(".panel.report h2");
+  if (reportTitle) {
+    reportTitle.innerHTML = `Monthly Report <span>- ${getMonthLabel(monthB)}</span>`;
+  }
+  const reportList = document.querySelector("#report-list");
+  if (reportList) {
+    reportList.innerHTML = "";
+    const lines = [
+      `Green cover change: ${data.stats.green_cover.change >= 0 ? "+" : ""}${data.stats.green_cover.change.toFixed(1)}% (Area Loss: -${data.stats.vegetation_loss_area_ha.toFixed(1)} ha).`,
+      `Water bodies footprint change: ${data.stats.water.change >= 0 ? "+" : ""}${data.stats.water.change.toFixed(1)}% (Net change: ${data.stats.water_change_area_ha >= 0 ? "+" : ""}${data.stats.water_change_area_ha.toFixed(1)} ha).`,
+      `Built-up expansion area: ${data.stats.built_up_expansion_area_ha.toFixed(1)} ha (${data.stats.built_up.change >= 0 ? "+" : ""}${data.stats.built_up.change.toFixed(1)}%).`,
+      `Average NDVI: ${data.stats.green_cover.avg_after.toFixed(3)}, Average NDWI: ${data.stats.water.avg_after.toFixed(3)}, Average NDBI: ${data.stats.built_up.avg_after.toFixed(3)}.`,
+      `Environmental Score: ${data.stats.environmental_score}/100.`,
+      `Recommendation: ${data.report.recommendation}`
+    ];
+    lines.forEach((line) => {
+      const item = document.createElement("li");
+      item.textContent = line;
+      reportList.appendChild(item);
+    });
+  }
+
+  // 5. Statistics / Comparison Statistics panel (.yearly)
+  const yearlyPanel = document.querySelector(".panel.yearly");
+  if (yearlyPanel) {
+    const h2 = yearlyPanel.querySelector("h2");
+    if (h2) {
+      h2.innerHTML = `Comparison Statistics <span>(${getMonthLabel(monthA)} vs ${getMonthLabel(monthB)})</span>`;
+    }
+    const divs = yearlyPanel.querySelectorAll("div");
+    if (divs[0]) {
+      const gChange = data.stats.green_cover.change;
+      const gLoss = data.stats.vegetation_loss_area_ha;
+      divs[0].innerHTML = `<span>Green Cover</span><strong class="${gChange < 0 ? "danger-text" : "success-text"}">${gChange >= 0 ? "+" : ""}${gChange.toFixed(1)}%</strong><em>-${gLoss.toFixed(1)} ha (Loss)</em>`;
+    }
+    if (divs[1]) {
+      const wChange = data.stats.water.change;
+      const wLoss = data.stats.water_change_area_ha;
+      divs[1].innerHTML = `<span>Water Bodies</span><strong class="${wChange < 0 ? "danger-text" : "success-text"}">${wChange >= 0 ? "+" : ""}${wChange.toFixed(1)}%</strong><em>${wLoss >= 0 ? "+" : ""}${wLoss.toFixed(1)} ha</em>`;
+    }
+    if (divs[2]) {
+      const bChange = data.stats.built_up.change;
+      const bGain = data.stats.built_up_expansion_area_ha;
+      divs[2].innerHTML = `<span>Built-up Area</span><strong class="${bChange >= 0 ? "success-text" : "danger-text"}">${bChange >= 0 ? "+" : ""}${bChange.toFixed(1)}%</strong><em>+${bGain.toFixed(1)} ha (Gain)</em>`;
+    }
+  }
+
+  // 6. Changes by Category (Monthly) bar chart
+  const bars = document.querySelectorAll(".bar-chart .bar");
+  if (bars && bars.length >= 4) {
+    const vegLoss = data.stats.vegetation_loss_area_ha;
+    const waterChg = data.stats.water_change_area_ha;
+    const builtGain = data.stats.built_up_expansion_area_ha;
+
+    const greenVal = Math.min(100, Math.max(10, Math.round(vegLoss * 2)));
+    bars[0].style.setProperty("--v", greenVal.toString());
+    const span0 = bars[0].querySelector("span");
+    if (span0) span0.textContent = `-${vegLoss.toFixed(1)} ha`;
+
+    const waterVal = Math.min(100, Math.max(10, Math.round(Math.abs(waterChg) * 4)));
+    bars[1].style.setProperty("--v", waterVal.toString());
+    const span1 = bars[1].querySelector("span");
+    if (span1) span1.textContent = `${waterChg >= 0 ? "+" : ""}${waterChg.toFixed(1)} ha`;
+
+    const builtVal = Math.min(100, Math.max(10, Math.round(builtGain * 5)));
+    bars[2].style.setProperty("--v", builtVal.toString());
+    const span2 = bars[2].querySelector("span");
+    if (span2) span2.textContent = `+${builtGain.toFixed(1)} ha`;
+
+    bars[3].style.setProperty("--v", "10");
+    const span3 = bars[3].querySelector("span");
+    if (span3) span3.textContent = "0.0 ha";
+  }
+
+  // 7. Donut Chart (NDVI Change)
+  const donutPct = data.stats.donut_ndvi_change;
+  const pHighInc = donutPct.high_inc ?? 0.0;
+  const pModInc = donutPct.mod_inc ?? 0.0;
+  const pNoChg = donutPct.no_chg ?? 0.0;
+  const pModDec = donutPct.mod_dec ?? 0.0;
+  const pHighDec = donutPct.high_dec ?? 0.0;
+
+  const legendSpans = document.querySelectorAll(".donut-legend li span");
+  if (legendSpans && legendSpans.length >= 5) {
+    legendSpans[0].textContent = `${pHighInc.toFixed(1)}%`;
+    legendSpans[1].textContent = `${pModInc.toFixed(1)}%`;
+    legendSpans[2].textContent = `${pNoChg.toFixed(1)}%`;
+    legendSpans[3].textContent = `${pModDec.toFixed(1)}%`;
+    legendSpans[4].textContent = `${pHighDec.toFixed(1)}%`;
+  }
+
+  const donut = document.querySelector(".donut");
+  if (donut) {
+    const limit1 = pHighInc;
+    const limit2 = limit1 + pModInc;
+    const limit3 = limit2 + pNoChg;
+    const limit4 = limit3 + pModDec;
+    donut.style.background = `conic-gradient(
+      #1a9850 0% ${limit1.toFixed(1)}%,
+      #91cf60 ${limit1.toFixed(1)}% ${limit2.toFixed(1)}%,
+      #fee08b ${limit2.toFixed(1)}% ${limit3.toFixed(1)}%,
+      #fc8d59 ${limit2.toFixed(1)}% ${limit3.toFixed(1) + pModDec}%,
+      #d73027 ${limit3.toFixed(1) + pModDec}% 100%
+    )`;
+  }
+
+  // 8. Dynamic Popups and Polygons layer
+  if (mapChange) {
+    if (mapChange.geojsonLayer) {
+      mapChange.removeLayer(mapChange.geojsonLayer);
+    }
+    mapChange.geojsonLayer = L.geoJSON(data.polygons, {
+      style: function(feature) {
+        const type = feature.properties.change_type;
+        if (type === "Built-up Expansion") {
+          return { color: "#FF3333", weight: 3, fillOpacity: 0.25 };
+        } else if (type === "Vegetation Loss") {
+          return { color: "#FF9900", weight: 3, fillOpacity: 0.25 };
+        }
+        return { color: "#0099FF", weight: 3, fillOpacity: 0.25 };
+      },
+      onEachFeature: function(feature, layer) {
+        const props = feature.properties;
+        const popupContent = `
+          <div style="font-family: inherit; color: #fff; padding: 4px;">
+            <strong style="font-size: 14px; color: #ff9800; display: block; margin-bottom: 6px;">${props.change_type} Detected</strong>
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 4px;">
+              <tr><td style="color: #888; padding: 2px 0;">Location:</td><td style="text-align: right; font-weight: bold; color: #fff;">${props.location}</td></tr>
+              <tr><td style="color: #888; padding: 2px 0;">Estimated Area:</td><td style="text-align: right; font-weight: bold; color: #ff9800;">${props.estimated_area_ha} ha</td></tr>
+              <tr><td style="color: #888; padding: 2px 0;">Confidence:</td><td style="text-align: right; font-weight: bold; color: #4caf50;">${(props.confidence * 100).toFixed(0)}%</td></tr>
+              <tr><td style="color: #888; padding: 2px 0;">Before State:</td><td style="text-align: right; color: #fff;">${props.before_val}</td></tr>
+              <tr><td style="color: #888; padding: 2px 0;">After State:</td><td style="text-align: right; color: #fff;">${props.after_val}</td></tr>
+            </table>
+          </div>
+        `;
+        layer.bindPopup(popupContent, { minWidth: 220 });
+      }
+    }).addTo(mapChange);
+  }
+
+  if (mapBuildup) {
+    if (mapBuildup.geojsonLayer) {
+      mapBuildup.removeLayer(mapBuildup.geojsonLayer);
+    }
+    const buildupPolygons = {
+      type: "FeatureCollection",
+      features: data.polygons.features.filter(f => f.properties.change_type === "Built-up Expansion")
+    };
+    mapBuildup.geojsonLayer = L.geoJSON(buildupPolygons, {
+      style: { color: "#FF3333", weight: 3, fillOpacity: 0.3 },
+      onEachFeature: function(feature, layer) {
+        const props = feature.properties;
+        const popupContent = `
+          <div style="font-family: inherit; color: #fff; padding: 4px;">
+            <strong style="font-size: 14px; color: #ff3333; display: block; margin-bottom: 6px;">Built-up Expansion Detected</strong>
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 4px;">
+              <tr><td style="color: #888; padding: 2px 0;">Location:</td><td style="text-align: right; font-weight: bold; color: #fff;">${props.location}</td></tr>
+              <tr><td style="color: #888; padding: 2px 0;">Estimated Area:</td><td style="text-align: right; font-weight: bold; color: #ff3333;">${props.estimated_area_ha} ha</td></tr>
+              <tr><td style="color: #888; padding: 2px 0;">Confidence:</td><td style="text-align: right; font-weight: bold; color: #4caf50;">${(props.confidence * 100).toFixed(0)}%</td></tr>
+              <tr><td style="color: #888; padding: 2px 0;">Before State:</td><td style="text-align: right; color: #fff;">${props.before_val}</td></tr>
+              <tr><td style="color: #888; padding: 2px 0;">After State:</td><td style="text-align: right; color: #fff;">${props.after_val}</td></tr>
+            </table>
+          </div>
+        `;
+        layer.bindPopup(popupContent, { minWidth: 200 });
+      }
+    }).addTo(mapBuildup);
+  }
+
+  // 9. Built-up expansion chips grid
+  buildCompareChipGrid(data.polygons.features.filter(f => f.properties.change_type === "Built-up Expansion"));
+}
+
+function getPolygonCentroid(coordinates, type) {
+  let coords = [];
+  if (type === "Polygon") {
+    coords = coordinates[0];
+  } else if (type === "MultiPolygon") {
+    coords = coordinates[0][0];
+  } else {
+    return CENTER;
+  }
+  let latSum = 0, lonSum = 0;
+  coords.forEach(c => {
+    lonSum += c[0];
+    latSum += c[1];
+  });
+  return [latSum / coords.length, lonSum / coords.length];
+}
+
+function buildCompareChipGrid(buildupFeatures) {
+  const grid = document.querySelector("#chips-grid");
+  const countEl = document.querySelector("#chip-count");
+  if (!grid) return;
+
+  if (buildupFeatures.length === 0) {
+    grid.innerHTML = `<p class="chips-empty">No built-up expansion clusters detected for this period.</p>`;
+    if (countEl) countEl.textContent = "";
+    return;
+  }
+
+  if (countEl) countEl.textContent = `${buildupFeatures.length} region${buildupFeatures.length !== 1 ? "s" : ""}`;
+  grid.innerHTML = "";
+
+  buildupFeatures.forEach((feat, i) => {
+    const centroid = getPolygonCentroid(feat.geometry.coordinates, feat.geometry.type);
+    const imgUrl = centroidToTileUrl(centroid[0], centroid[1], 18);
+    const areaVal = feat.properties.estimated_area_ha;
+    const areaLabel = `${areaVal.toFixed(2)} ha`;
+
+    const chip = document.createElement("div");
+    chip.className = "chip";
+    chip.innerHTML = `
+      <img src="${imgUrl}" alt="Built-up region ${i + 1}" loading="lazy" />
+      <div class="chip-info">
+        <span class="chip-label">Region ${i + 1}</span>
+        <span class="chip-area">${areaLabel}</span>
+      </div>
+    `;
+    chip.style.cursor = "pointer";
+    chip.addEventListener("click", () => {
+      if (mapBuildup) {
+        mapBuildup.setView(centroid, 16);
+      }
+    });
+    grid.appendChild(chip);
+  });
 }
 
 function syncMaps() {
@@ -405,85 +670,56 @@ function syncMaps() {
 
 async function boot() {
   try {
-    const [report, tiles, boundary, buildupData] = await Promise.all([
-      getJson("/api/report"),
-      getJson("/api/tiles"),
-      getJson("/api/boundary"),
-      getJson("/api/buildup"),
-    ]);
+    const boundary = await getJson("/api/boundary");
 
-    // Parse defaults from metadata
-    let beforeMonth = "2024-05";
-    let afterMonth = "2024-06";
-    if (report.metadata?.before_month) {
-      beforeMonth = report.metadata.before_month;
-    } else if (report.metadata?.before_composite?.start) {
-      beforeMonth = report.metadata.before_composite.start.substring(0, 7);
-    }
-    if (report.metadata?.after_month) {
-      afterMonth = report.metadata.after_month;
-    } else if (report.metadata?.after_composite?.start) {
-      afterMonth = report.metadata.after_composite.start.substring(0, 7);
-    }
-
+    // Set default select values if not set
     const selectBefore = document.querySelector("#select-before");
     const selectAfter = document.querySelector("#select-after");
-    if (selectBefore) selectBefore.value = beforeMonth;
-    if (selectAfter) selectAfter.value = afterMonth;
 
-    const labelBefore = document.querySelector("#label-before");
-    const labelAfter = document.querySelector("#label-after");
-    const labelBeforeChange = document.querySelector("#label-before-change");
-    const labelAfterChange = document.querySelector("#label-after-change");
-    const labelBeforeBuildup = document.querySelector("#label-before-buildup");
-    const labelAfterBuildup = document.querySelector("#label-after-buildup");
+    if (selectBefore && !selectBefore.value) selectBefore.value = "2024-05";
+    if (selectAfter && !selectAfter.value) selectAfter.value = "2024-06";
 
-    const labelBeforeVal = getMonthLabel(beforeMonth);
-    const labelAfterVal = getMonthLabel(afterMonth);
+    const beforeMonth = selectBefore ? selectBefore.value : "2024-05";
+    const afterMonth = selectAfter ? selectAfter.value : "2024-06";
 
-    if (labelBefore) labelBefore.textContent = labelBeforeVal;
-    if (labelAfter) labelAfter.textContent = labelAfterVal;
-    if (labelBeforeChange) labelBeforeChange.textContent = labelBeforeVal;
-    if (labelAfterChange) labelAfterChange.textContent = labelAfterVal;
-    if (labelBeforeBuildup) labelBeforeBuildup.textContent = labelBeforeVal;
-    if (labelAfterBuildup) labelAfterBuildup.textContent = labelAfterVal;
+    // Call compare endpoint to get all data
+    const data = await getJson(`/api/compare?monthA=${beforeMonth}&monthB=${afterMonth}`);
 
-    updateReport(report);
-    buildChipGrid(buildupData?.buildup);
+    // Initialize maps
+    mapBefore = createMap("map-before", boundary, data.tiles.before, { opacity: 1 });
+    mapAfter = createMap("map-after", boundary, data.tiles.after, { opacity: 1 });
 
-    const beforeTile = tiles.tiles?.true_color_before?.url;
-    const afterTile = tiles.tiles?.true_color_after?.url;
-    const changeTile = tiles.tiles?.ndvi_change?.url;
-    const constructionTile = tiles.tiles?.new_construction?.url;
-
-    mapBefore = createMap("map-before", boundary, beforeTile, { opacity: 1 });
-    mapAfter = createMap("map-after", boundary, afterTile, { opacity: 1 });
-    mapChange = createMap("map-change", boundary, changeTile, {
+    mapChange = createMap("map-change", boundary, data.tiles.ndvi_change, {
       opacity: 0.85,
       boundaryColor: "#243518",
     });
-    addTileOverlay(mapChange, constructionTile, { opacity: 0.9 });
-    mapBuildup = createMap("map-buildup", boundary, constructionTile, {
+    addTileOverlay(mapChange, data.tiles.new_construction, { opacity: 0.9 });
+
+    mapBuildup = createMap("map-buildup", boundary, data.tiles.new_construction, {
       opacity: 0.9,
       boundaryColor: "#FF4444",
       zoom: 15,
     });
+
     addBoundaryMask(mapBuildup, boundary);
     syncMaps();
 
-    // Register period selection listener and change listeners
-    const btn = document.querySelector("#btn-generate");
+    // Update labels and UI content
+    updateLabels(beforeMonth, afterMonth);
+    updateDashboardUI(data, beforeMonth, afterMonth);
 
+    // Register period selection listener and change listeners
     function triggerUpdate() {
-      const beforeVal = selectBefore ? selectBefore.value : "2024-05";
-      const afterVal = selectAfter ? selectAfter.value : "2024-06";
-      if (beforeVal === afterVal) {
+      const bVal = selectBefore ? selectBefore.value : "2024-05";
+      const aVal = selectAfter ? selectAfter.value : "2024-06";
+      if (bVal === aVal) {
         alert("Please select two different months for comparison.");
         return;
       }
-      updateDashboard(beforeVal, afterVal);
+      updateDashboard(bVal, aVal);
     }
 
+    const btn = document.querySelector("#btn-generate");
     if (btn) {
       btn.addEventListener("click", triggerUpdate);
     }
@@ -494,7 +730,7 @@ async function boot() {
       selectAfter.addEventListener("change", triggerUpdate);
     }
   } catch (error) {
-    console.error(error);
+    console.error("Boot error:", error);
     buildAlerts([]);
   }
 }

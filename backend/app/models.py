@@ -69,3 +69,36 @@ class ApiData(BaseModel):
     buildup: BuildupResult = Field(default_factory=BuildupResult)
     alerts: list[Alert] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class MetricChange(BaseModel):
+    before: float
+    after: float
+    change: float
+    avg_before: float | None = None
+    avg_after: float | None = None
+
+
+class CompareStats(BaseModel):
+    green_cover: MetricChange
+    water: MetricChange
+    built_up: MetricChange
+    environmental_score: int
+    vegetation_loss_area_ha: float
+    water_change_area_ha: float
+    built_up_expansion_area_ha: float
+    total_built_up_area_ha: float
+    panchayat_area_ha: float
+    donut_ndvi_change: dict[str, float]
+
+
+class CompareResponse(BaseModel):
+    panchayat: str = "Chakkittapara Grama Panchayat"
+    monthA: str
+    monthB: str
+    generated_at: str
+    tiles: dict[str, str]
+    stats: CompareStats
+    polygons: dict[str, Any]
+    report: dict[str, str]
+    alerts: list[Alert]

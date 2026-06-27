@@ -31,7 +31,13 @@ GramaDrishti pulls Sentinel-2 imagery from Google Earth Engine, computes environ
 - [x] Static frontend scaffolded from `mockup.jpeg`
 - [x] Frontend uses Leaflet and consumes the Python API
 - [x] Backend tests added with `unittest`
-- [ ] Built-up area detection is still placeholder UI/data
+- [x] Dynamic GEE query engine (`backend/app/gee_query.py`) implemented for on-the-fly month-to-month comparisons
+- [x] NDBI-based built-up expansion detection logic fully integrated and replacing individual building detection
+- [x] Main `/api/compare` endpoint fully implemented to run comparison of Month A vs Month B on-the-fly and return statistics, tiles, GeoJSON change polygons, reports, and alerts
+- [x] Server-side caching implemented for calculated comparison results in `backend/data/cache/`
+- [x] Dynamic dropdown controls and auto-updating maps/reports/charts wired in the frontend via a single `/api/compare` call
+- [x] Interactive Leaflet polygon click popups implemented for all detected change types
+- [x] Fully updated bar chart and donut chart to represent actual GEE metrics dynamically
 - [ ] River/water-body shrinkage detection is still planned
 
 ---
@@ -39,34 +45,37 @@ GramaDrishti pulls Sentinel-2 imagery from Google Earth Engine, computes environ
 ## Architecture
 
 ```text
-GEE Python Scripts
-  └── gee/fetch_change.py          # true-color tiles + NDVI/NDWI + NDVI change raster
-  └── (planned) gee/fetch_buildup.py
-  └── (planned) gee/fetch_river.py
+GEE Python Integration
+  └── backend/app/gee_query.py     # On-the-fly S1/S2 composite fetching, NDBI computation, and comparison query engine
+  └── gee/fetch_change.py          # Offline batch script for generating baseline composites
 
-       ↓ writes
+       ↓ writes cache to / reads from
 
-data/output.json                   # shared data layer with GEE tile URLs and metrics
+backend/data/cache/                # Server-side cache directory storing calculated monthly JSON results
+data/output.json                   # baseline/sample fallback data layer
 
-       ↓ read by
+       ↓ served by
 
 Python/FastAPI Backend
   └── GET  /health                 # deployment/local health check
-  └── GET  /api/indices            # current NDVI, NDWI values
+  └── GET  /api/compare            # Main on-the-fly month-to-month comparison endpoint (returns stats, tiles, polygons, report, alerts)
+  └── GET  /api/indices            # current/month-specific NDVI, NDWI values
   └── GET  /api/timeseries         # monthly sample NDVI/NDWI series
-  └── GET  /api/tiles              # GEE tile URL templates for frontend maps
-  └── GET  /api/report             # summary report JSON
+  └── GET  /api/tiles              # dynamic GEE tile URL templates for frontend maps
+  └── GET  /api/buildup            # detected building cluster coordinates and metrics
+  └── GET  /api/report             # dynamic summary report JSON
   └── GET  /api/boundary           # panchayat boundary GeoJSON
-  └── POST /api/refresh            # clears cached data/output.json
+  └── POST /api/refresh            # clears cached data
 
        ↓ consumed by
 
 Static Frontend
-  └── frontend/index.html          # dashboard layout from mockup.jpeg
+  └── frontend/index.html          # dashboard layout (4-map grid with dropdown period selectors)
   └── frontend/styles.css          # dark operations dashboard styling
-  └── frontend/app.js              # API fetch + Leaflet map wiring
-  └── Side-by-side comparison      # May/June true-color GEE tile layers
-  └── NDVI change panel            # colored GEE change raster overlay
+  └── frontend/app.js              # API fetch + Leaflet maps + automatic update triggers
+  └── mapBefore / mapAfter         # natural true-color (B4/B3/B2) S2 composites
+  └── mapChange                    # colorized NDVI change raster + building detection overlay
+  └── mapBuildup                   # building expansion map showing new construction clusters
 ```
 
 ---
@@ -79,15 +88,18 @@ HarithaSethu/
 │   └── fetch_change.py
 ├── backend/
 │   ├── main.py
-│   └── app/
-│       ├── data_store.py
-│       └── models.py
+│   ├── app/
+│   │   ├── data_store.py
+│   │   ├── models.py
+│   │   └── gee_query.py
+│   └── data/
+│       └── cache/
 ├── data/
 │   └── output.json
 ├── frontend/
-    ├── index.html
-    ├── styles.css
-    └── app.js
+│   ├── index.html
+│   ├── styles.css
+│   └── app.js
 ├── tests/
 │   └── test_backend.py
 ├── mockup.jpeg
@@ -261,14 +273,10 @@ OK
 
 ## Next Steps
 
-1. Restart or refresh the backend after `data/output.json` changes.
-2. Verify the frontend map panels display real GEE tiles instead of fallback gradients.
-3. Improve the side-by-side comparison UI with synchronized map movement.
-4. Replace sample monthly timeseries with GEE-computed monthly NDVI/NDWI values.
-5. Add built-up area detection script and API fields.
-6. Add named river/water-body shrinkage detection.
-7. Decide whether to keep static frontend or migrate to React/Vite once the dashboard behavior stabilizes.
-8. Add screenshot/browser verification for the frontend.
+1. Add named river/water-body shrinkage detection algorithms utilizing NDWI values.
+2. Expand the GEE queries to support wider geographical zones outside Kozhikode.
+3. Optimize Leaflet canvas rendering performance under multi-period fast switching.
+4. Prepare production environment variables for credentials deployment.
 
 ---
 

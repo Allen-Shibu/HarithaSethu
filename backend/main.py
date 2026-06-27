@@ -7,8 +7,8 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from .app.data_store import load_boundary, load_data, refresh_data_cache
-from .app.gee_query import compute_monthly_comparison
-from .app.models import ApiData
+from .app.gee_query import compare_periods, compute_monthly_comparison
+from .app.models import ApiData, CompareResponse
 
 app = FastAPI(
     title="GramaDrishti API",
@@ -135,6 +135,41 @@ def get_boundary() -> dict[str, object]:
         return load_boundary()
     except FileNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Boundary GeoJSON not found") from exc
+
+
+@app.get("/api/compare", response_model=CompareResponse)
+def compare(monthA: str, monthB: str) -> CompareResponse:
+    try:
+        datetime.strptime(monthA, "%Y-%m")
+        datetime.strptime(monthB, "%Y-%m")
+    except ValueError:
+        raise HTTPException(
+            status_code=400, detail="Invalid date format. Use YYYY-MM (e.g. 2024-05)"
+        )
+
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    cache_file = CACHE_DIR / f"compare_{monthA}_{monthB}.json"
+
+    if cache_file.exists():
+        try:
+            with cache_file.open("r", encoding="utf-8") as f:
+                raw = json.load(f)
+            return CompareResponse.model_validate(raw)
+        except Exception:
+            try:
+                cache_file.unlink()
+            except OSError:
+                pass
+
+    try:
+        data = compare_periods(monthA, monthB)
+        with cache_file.open("w", encoding="utf-8") as f:
+            json.dump(data.model_dump(mode="json"), f, indent=2)
+        return data
+    except Exception as e:
+        raise HTTPException(
+            status_code=500, detail=f"Google Earth Engine comparison failed: {str(e)}"
+        )
 
 
 @app.post("/api/refresh")
