@@ -332,8 +332,20 @@ async function updateDashboard(beforeMonth, afterMonth) {
     // Update dynamic text in dashboard panels
     const labelBefore = document.querySelector("#label-before");
     const labelAfter = document.querySelector("#label-after");
-    if (labelBefore) labelBefore.textContent = getMonthLabel(beforeMonth);
-    if (labelAfter) labelAfter.textContent = getMonthLabel(afterMonth);
+    const labelBeforeChange = document.querySelector("#label-before-change");
+    const labelAfterChange = document.querySelector("#label-after-change");
+    const labelBeforeBuildup = document.querySelector("#label-before-buildup");
+    const labelAfterBuildup = document.querySelector("#label-after-buildup");
+
+    const labelBeforeVal = getMonthLabel(beforeMonth);
+    const labelAfterVal = getMonthLabel(afterMonth);
+
+    if (labelBefore) labelBefore.textContent = labelBeforeVal;
+    if (labelAfter) labelAfter.textContent = labelAfterVal;
+    if (labelBeforeChange) labelBeforeChange.textContent = labelBeforeVal;
+    if (labelAfterChange) labelAfterChange.textContent = labelAfterVal;
+    if (labelBeforeBuildup) labelBeforeBuildup.textContent = labelBeforeVal;
+    if (labelAfterBuildup) labelAfterBuildup.textContent = labelAfterVal;
 
     updateReport(report);
     buildChipGrid(buildupData?.buildup);
@@ -421,8 +433,20 @@ async function boot() {
 
     const labelBefore = document.querySelector("#label-before");
     const labelAfter = document.querySelector("#label-after");
-    if (labelBefore) labelBefore.textContent = getMonthLabel(beforeMonth);
-    if (labelAfter) labelAfter.textContent = getMonthLabel(afterMonth);
+    const labelBeforeChange = document.querySelector("#label-before-change");
+    const labelAfterChange = document.querySelector("#label-after-change");
+    const labelBeforeBuildup = document.querySelector("#label-before-buildup");
+    const labelAfterBuildup = document.querySelector("#label-after-buildup");
+
+    const labelBeforeVal = getMonthLabel(beforeMonth);
+    const labelAfterVal = getMonthLabel(afterMonth);
+
+    if (labelBefore) labelBefore.textContent = labelBeforeVal;
+    if (labelAfter) labelAfter.textContent = labelAfterVal;
+    if (labelBeforeChange) labelBeforeChange.textContent = labelBeforeVal;
+    if (labelAfterChange) labelAfterChange.textContent = labelAfterVal;
+    if (labelBeforeBuildup) labelBeforeBuildup.textContent = labelBeforeVal;
+    if (labelAfterBuildup) labelAfterBuildup.textContent = labelAfterVal;
 
     updateReport(report);
     buildChipGrid(buildupData?.buildup);

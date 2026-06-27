@@ -79,7 +79,9 @@ def sentinel_composite(
             .filter(ee.Filter.lt("CLOUDY_PIXEL_PERCENTAGE", threshold))
         )
         if int(collection.size().getInfo()) > 0:
-            return collection.map(mask_s2_clouds).median().clip(panchayat)
+            masked = collection.map(mask_s2_clouds).median().clip(panchayat)
+            raw = collection.median().clip(panchayat)
+            return masked.unmask(raw)
     raise RuntimeError(f"No Sentinel-2 imagery available between {start} and {end}")
 
 
@@ -158,8 +160,8 @@ def compute_monthly_comparison(before_month: str, after_month: str) -> ApiData:
     )
 
     # 5. Tile URLs
-    url_before = tile_url(before.select(["B8", "B4", "B3"]), {"min": 0, "max": 3000})
-    url_after = tile_url(after.select(["B8", "B4", "B3"]), {"min": 0, "max": 3000})
+    url_before = tile_url(before.select(["B4", "B3", "B2"]), {"min": 0, "max": 2500})
+    url_after = tile_url(after.select(["B4", "B3", "B2"]), {"min": 0, "max": 2500})
     url_change = tile_url(change, {"min": -0.5, "max": 0.5, "palette": CHANGE_PALETTE})
     url_buildup = tile_url(cleaned, {"min": 0, "max": 1, "palette": ["#FF4500"]})
 
