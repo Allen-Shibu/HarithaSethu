@@ -4,7 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from .models import Alert, ApiData, IndexValues, SummaryMetrics, TileLayer, TimeseriesPoint
+from .models import Alert, ApiData, BuildupResult, IndexValues, SummaryMetrics, TileLayer, TimeseriesPoint
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 DATA_FILE = ROOT_DIR / "data" / "output.json"
@@ -60,9 +60,10 @@ def _sample_data() -> ApiData:
         summary=SummaryMetrics(
             green_cover_percent=76.8,
             water_bodies_percent=3.1,
-            built_up_percent=6.4,
+            built_up_area_ha=0.0,
             environmental_score=82,
         ),
+        buildup=BuildupResult(),
         alerts=[
             Alert(
                 level="medium",

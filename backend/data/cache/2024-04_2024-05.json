@@ -1,0 +1,158 @@
+{
+  "panchayat": "Chakkittapara Grama Panchayat",
+  "district": "Kozhikode",
+  "state": "Kerala",
+  "generated_at": "2026-06-27T18:24:51.836646+00:00",
+  "source": "google_earth_engine_dynamic",
+  "indices": {
+    "ndvi": 0.468,
+    "ndwi": -0.401
+  },
+  "tiles": {
+    "true_color_before": {
+      "url": "https://earthengine.googleapis.com/v1/projects/n8n-workflows-473615/maps/0c449f4be340d589da05a82f10b160e9-6508c1881cb1d3e330f76f79265be472/tiles/{z}/{x}/{y}",
+      "attribution": "Google Earth Engine / Sentinel-2 SR Harmonized",
+      "min": null,
+      "max": null,
+      "palette": []
+    },
+    "true_color_after": {
+      "url": "https://earthengine.googleapis.com/v1/projects/n8n-workflows-473615/maps/eb6a6c4d1d3c6824e36f10703c4cac96-f57506e93f6d516adc6fa445de2760b4/tiles/{z}/{x}/{y}",
+      "attribution": "Google Earth Engine / Sentinel-2 SR Harmonized",
+      "min": null,
+      "max": null,
+      "palette": []
+    },
+    "ndvi_change": {
+      "url": "https://earthengine.googleapis.com/v1/projects/n8n-workflows-473615/maps/3a247ea6acc08f71b5f85f5b1753c0d4-382533256393090672ae6bcffb1ed7f8/tiles/{z}/{x}/{y}",
+      "attribution": "Google Earth Engine / Sentinel-2 SR Harmonized",
+      "min": -0.5,
+      "max": 0.5,
+      "palette": [
+        "#d73027",
+        "#fc8d59",
+        "#fee08b",
+        "#d9ef8b",
+        "#1a9850"
+      ]
+    },
+    "new_construction": {
+      "url": "https://earthengine.googleapis.com/v1/projects/n8n-workflows-473615/maps/3e8f1b2ee55deb85ba368cc05f7c32c3-225ae906db31dc4f225b786da49be55d/tiles/{z}/{x}/{y}",
+      "attribution": "Google Earth Engine / Sentinel-1 SAR + Sentinel-2 NDVI",
+      "min": null,
+      "max": null,
+      "palette": []
+    }
+  },
+  "timeseries": [],
+  "summary": {
+    "green_cover_percent": 46.8,
+    "water_bodies_percent": 0.0,
+    "built_up_area_ha": 10.1,
+    "environmental_score": 58
+  },
+  "buildup": {
+    "method": "sentinel1_sar_ndvi_fusion",
+    "tile_url": "https://earthengine.googleapis.com/v1/projects/n8n-workflows-473615/maps/3e8f1b2ee55deb85ba368cc05f7c32c3-225ae906db31dc4f225b786da49be55d/tiles/{z}/{x}/{y}",
+    "vv_change_tile_url": null,
+    "new_built_area_ha": 10.1,
+    "cluster_count": 12,
+    "clusters": [
+      {
+        "lat": 11.583305,
+        "lon": 75.816894,
+        "area_m2": 6451.1
+      },
+      {
+        "lat": 11.641034,
+        "lon": 75.849305,
+        "area_m2": 4886.2
+      },
+      {
+        "lat": 11.6631,
+        "lon": 75.879955,
+        "area_m2": 4788.1
+      },
+      {
+        "lat": 11.577648,
+        "lon": 75.814951,
+        "area_m2": 4594.1
+      },
+      {
+        "lat": 11.616474,
+        "lon": 75.872963,
+        "area_m2": 4495.7
+      },
+      {
+        "lat": 11.560939,
+        "lon": 75.865565,
+        "area_m2": 3714.6
+      },
+      {
+        "lat": 11.597647,
+        "lon": 75.839326,
+        "area_m2": 3225.4
+      },
+      {
+        "lat": 11.57642,
+        "lon": 75.815866,
+        "area_m2": 3127.9
+      },
+      {
+        "lat": 11.572821,
+        "lon": 75.841913,
+        "area_m2": 2932.4
+      },
+      {
+        "lat": 11.649267,
+        "lon": 75.84236,
+        "area_m2": 2931.6
+      },
+      {
+        "lat": 11.609264,
+        "lon": 75.86348,
+        "area_m2": 2736.6
+      },
+      {
+        "lat": 11.608314,
+        "lon": 75.809215,
+        "area_m2": 2638.9
+      }
+    ],
+    "thresholds": {
+      "vv_change_db": 2.0,
+      "ndvi_change": -0.1
+    },
+    "periods": {
+      "before": {
+        "start": "2024-04-01",
+        "end": "2024-04-30"
+      },
+      "after": {
+        "start": "2024-05-01",
+        "end": "2024-05-31"
+      }
+    }
+  },
+  "alerts": [
+    {
+      "level": "high",
+      "type": "vegetation",
+      "title": "Low Vegetation Density",
+      "message": "Panchayat NDVI is 0.468, indicating significant vegetation loss.",
+      "metric": 0.468
+    },
+    {
+      "level": "medium",
+      "type": "buildup",
+      "title": "Significant Construction Detected",
+      "message": "Detected 10.10 ha of new built-up area between 2024-04 and 2024-05.",
+      "metric": 10.1
+    }
+  ],
+  "metadata": {
+    "before_month": "2024-04",
+    "after_month": "2024-05",
+    "sensor": "Sentinel-1 SAR / Sentinel-2 SR"
+  }
+}

@@ -43,21 +43,49 @@
           <p>Environmental Monitoring Dashboard</p>
         </div>
         <div class="period-controls">
-          <button type="button">May 2024</button>
+          <select id="select-before">
+            <option value="2023-12">Dec 2023</option>
+            <option value="2024-01">Jan 2024</option>
+            <option value="2024-02">Feb 2024</option>
+            <option value="2024-03">Mar 2024</option>
+            <option value="2024-04">Apr 2024</option>
+            <option value="2024-05" selected>May 2024</option>
+            <option value="2024-06">Jun 2024</option>
+            <option value="2024-07">Jul 2024</option>
+            <option value="2024-08">Aug 2024</option>
+            <option value="2024-09">Sep 2024</option>
+            <option value="2024-10">Oct 2024</option>
+            <option value="2024-11">Nov 2024</option>
+            <option value="2024-12">Dec 2024</option>
+          </select>
           <span>vs</span>
-          <button type="button">June 2024</button>
-          <button class="primary" type="button">Generate Report</button>
+          <select id="select-after">
+            <option value="2023-12">Dec 2023</option>
+            <option value="2024-01">Jan 2024</option>
+            <option value="2024-02">Feb 2024</option>
+            <option value="2024-03">Mar 2024</option>
+            <option value="2024-04">Apr 2024</option>
+            <option value="2024-05">May 2024</option>
+            <option value="2024-06" selected>Jun 2024</option>
+            <option value="2024-07">Jul 2024</option>
+            <option value="2024-08">Aug 2024</option>
+            <option value="2024-09">Sep 2024</option>
+            <option value="2024-10">Oct 2024</option>
+            <option value="2024-11">Nov 2024</option>
+            <option value="2024-12">Dec 2024</option>
+          </select>
+          <button class="primary" id="btn-generate" type="button">Generate Report</button>
         </div>
       </header>
 
       <section class="dashboard-grid">
         <article class="panel map-panel span-4">
-          <h2>Satellite Image - May 2024</h2>
+          <h2>Satellite Image - <span id="label-before">May 2024</span></h2>
           <div id="map-before" class="map-canvas fallback-map"></div>
         </article>
 
         <article class="panel map-panel span-4">
-          <h2>Satellite Image - June 2024</h2>
+          <h2>Satellite Image - <span id="label-after">June 2024</span></h2>
           <div id="map-after" class="map-canvas fallback-map"></div>
         </article>
 
@@ -115,10 +143,9 @@
         </article>
 
         <article class="panel span-4">
-          <h2>New Buildings Detected</h2>
-          <div class="chip-grid">
-            <div></div><div></div><div></div><div></div>
-            <div></div><div></div><div></div><div></div>
+          <h2>New Buildings Detected <span id="chip-count"></span></h2>
+          <div id="chips-grid" class="chip-grid">
+            <p class="chips-empty">Run <code>gee/fetch_change.py</code> to detect new construction sites.</p>
           </div>
         </article>
 

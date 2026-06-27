@@ -32,10 +32,27 @@ class Alert(BaseModel):
     metric: float | None = None
 
 
+class BuildupCluster(BaseModel):
+    lat: float
+    lon: float
+    area_m2: float
+
+
+class BuildupResult(BaseModel):
+    method: str = "sentinel1_sar_ndvi_fusion"
+    tile_url: str | None = None
+    vv_change_tile_url: str | None = None
+    new_built_area_ha: float = 0.0
+    cluster_count: int = 0
+    clusters: list[BuildupCluster] = Field(default_factory=list)
+    thresholds: dict[str, Any] = Field(default_factory=dict)
+    periods: dict[str, Any] = Field(default_factory=dict)
+
+
 class SummaryMetrics(BaseModel):
     green_cover_percent: float
     water_bodies_percent: float
-    built_up_percent: float
+    built_up_area_ha: float = 0.0   # renamed from built_up_percent (was incorrectly in ha)
     environmental_score: int
 
 
@@ -49,5 +66,6 @@ class ApiData(BaseModel):
     tiles: dict[str, TileLayer] = Field(default_factory=dict)
     timeseries: list[TimeseriesPoint] = Field(default_factory=list)
     summary: SummaryMetrics
+    buildup: BuildupResult = Field(default_factory=BuildupResult)
     alerts: list[Alert] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)

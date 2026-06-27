@@ -1,0 +1,84 @@
+{
+  "method": "sentinel1_sar_ndvi_fusion",
+  "tile_url": "https://earthengine.googleapis.com/v1/projects/n8n-workflows-473615/maps/142eaa017a8958db424e3c002ad35371-ad5637751e3e284e756a9fface78968d/tiles/{z}/{x}/{y}",
+  "vv_change_tile_url": "https://earthengine.googleapis.com/v1/projects/n8n-workflows-473615/maps/d8ed82b23df608673766b258d2bc9b0d-d9fce5effd5802de1fb262b2f9aa8841/tiles/{z}/{x}/{y}",
+  "new_built_area_ha": 4.87,
+  "cluster_count": 12,
+  "clusters": [
+    {
+      "lat": 11.591778,
+      "lon": 75.841012,
+      "area_m2": 9383.2
+    },
+    {
+      "lat": 11.595168,
+      "lon": 75.83538,
+      "area_m2": 9187.6
+    },
+    {
+      "lat": 11.573774,
+      "lon": 75.826873,
+      "area_m2": 3518.9
+    },
+    {
+      "lat": 11.597438,
+      "lon": 75.850303,
+      "area_m2": 3127.7
+    },
+    {
+      "lat": 11.595909,
+      "lon": 75.839133,
+      "area_m2": 3029.9
+    },
+    {
+      "lat": 11.596305,
+      "lon": 75.834331,
+      "area_m2": 3029.9
+    },
+    {
+      "lat": 11.599094,
+      "lon": 75.842873,
+      "area_m2": 2834.4
+    },
+    {
+      "lat": 11.593075,
+      "lon": 75.832503,
+      "area_m2": 2736.8
+    },
+    {
+      "lat": 11.568023,
+      "lon": 75.848464,
+      "area_m2": 2541.5
+    },
+    {
+      "lat": 11.591548,
+      "lon": 75.842556,
+      "area_m2": 2248.1
+    },
+    {
+      "lat": 11.571928,
+      "lon": 75.845161,
+      "area_m2": 1173.0
+    },
+    {
+      "lat": 11.558858,
+      "lon": 75.860653,
+      "area_m2": 782.0
+    }
+  ],
+  "thresholds": {
+    "vv_change_db": 2.0,
+    "ndvi_change": -0.1,
+    "speckle_filter_radius_m": 50
+  },
+  "periods": {
+    "before": {
+      "start": "2023-12-01",
+      "end": "2024-02-28"
+    },
+    "after": {
+      "start": "2024-03-01",
+      "end": "2024-05-01"
+    }
+  }
+}

@@ -1,10 +1,15 @@
 from __future__ import annotations
 
 import json
+import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
 import ee
+
+# Allow sibling-module import when running as a top-level script
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from fetch_buildup_sar import detect_new_construction  # noqa: E402
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 BOUNDARY_FILE = ROOT_DIR / "Chakkittapara Grama Panchayat - Boundaries.geojson"
@@ -111,50 +116,8 @@ def tile_url(image: ee.Image, vis_params: dict[str, object]) -> str:
     return map_id["tile_fetcher"].url_format
 
 
-def fetch_buildup(
-    panchayat: ee.Geometry,
-    before_start: str,
-    before_end: str,
-    after_start: str,
-    after_end: str,
-) -> dict:
-    dw_before = (
-        ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1")
-        .filterBounds(panchayat)
-        .filterDate(before_start, before_end)
-        .mode()
-    )
-
-    dw_after = (
-        ee.ImageCollection("GOOGLE/DYNAMICWORLD/V1")
-        .filterBounds(panchayat)
-        .filterDate(after_start, after_end)
-        .mode()
-    )
-
-    built_before = dw_before.select("label").eq(6)
-    built_after = dw_after.select("label").eq(6)
-
-    new_construction = built_after.And(built_before.Not()).selfMask()
-
-    new_construction_url = tile_url(
-        new_construction,
-        {"min": 0, "max": 1, "palette": ["FF0000"]},
-    )
-
-    area = new_construction.multiply(ee.Image.pixelArea()).reduceRegion(
-        reducer=ee.Reducer.sum(),
-        geometry=panchayat,
-        scale=10,
-        maxPixels=1_000_000_000,
-    ).getInfo()
-
-    area_ha = round(area.get("label", 0) / 10000, 2)
-
-    return {
-        "tile_url": new_construction_url,
-        "new_built_area_ha": area_ha,
-    }
+# Dynamic World fetch_buildup() removed.
+# New construction is now detected via SAR + NDVI fusion in fetch_buildup_sar.py.
 
 
 def build_output() -> dict[str, object]:
@@ -198,7 +161,9 @@ def build_output() -> dict[str, object]:
 
     change = after.select("ndvi").subtract(before.select("ndvi")).rename("ndvi_change")
     indices = mean_indices(current, panchayat)
-    buildup = fetch_buildup(
+
+    print("\n── Built-up detection (SAR + NDVI fusion) ──")
+    buildup = detect_new_construction(
         panchayat,
         before_start="2023-12-01",
         before_end="2024-02-28",
@@ -244,13 +209,14 @@ def build_output() -> dict[str, object]:
             },
             "new_construction": {
                 "url": buildup["tile_url"],
-                "attribution": "Google Dynamic World / Sentinel-2",
+                "attribution": "Google Earth Engine / Sentinel-1 SAR + Sentinel-2 NDVI",
             },
         },
+        "buildup": buildup,
         "summary": {
             "green_cover_percent": round(indices["ndvi"] * 100, 1),
             "water_bodies_percent": round(max(indices["ndwi"], 0) * 100, 1),
-            "built_up_percent": buildup["new_built_area_ha"],
+            "built_up_area_ha": buildup["new_built_area_ha"],
             "environmental_score": min(100, max(0, round((indices["ndvi"] * 85) + 18))),
         },
         "alerts": [],

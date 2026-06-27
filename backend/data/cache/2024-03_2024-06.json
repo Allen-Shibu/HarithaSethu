@@ -1,0 +1,151 @@
+{
+  "panchayat": "Chakkittapara Grama Panchayat",
+  "district": "Kozhikode",
+  "state": "Kerala",
+  "generated_at": "2026-06-27T18:39:20.017790+00:00",
+  "source": "google_earth_engine_dynamic",
+  "indices": {
+    "ndvi": 0.644,
+    "ndwi": -0.554
+  },
+  "tiles": {
+    "true_color_before": {
+      "url": "https://earthengine.googleapis.com/v1/projects/n8n-workflows-473615/maps/0f64f3cd49ca0dc2ae0f80346ac8ace3-17c017c7c3dae29925200507bbcdeaab/tiles/{z}/{x}/{y}",
+      "attribution": "Google Earth Engine / Sentinel-2 SR Harmonized",
+      "min": null,
+      "max": null,
+      "palette": []
+    },
+    "true_color_after": {
+      "url": "https://earthengine.googleapis.com/v1/projects/n8n-workflows-473615/maps/c0cf9e5cf7bd65600e9356374f0c0a51-27b607de4ecdaa40867cebaa1e22866c/tiles/{z}/{x}/{y}",
+      "attribution": "Google Earth Engine / Sentinel-2 SR Harmonized",
+      "min": null,
+      "max": null,
+      "palette": []
+    },
+    "ndvi_change": {
+      "url": "https://earthengine.googleapis.com/v1/projects/n8n-workflows-473615/maps/9c41856aad4b330aa9536453e3d7be3e-42735438e67fa2f5e76525545ba4bfa9/tiles/{z}/{x}/{y}",
+      "attribution": "Google Earth Engine / Sentinel-2 SR Harmonized",
+      "min": -0.5,
+      "max": 0.5,
+      "palette": [
+        "#d73027",
+        "#fc8d59",
+        "#fee08b",
+        "#d9ef8b",
+        "#1a9850"
+      ]
+    },
+    "new_construction": {
+      "url": "https://earthengine.googleapis.com/v1/projects/n8n-workflows-473615/maps/53c66a4ddb6e860f03ad548b6eb137a2-634468c82fc00210d6f76f1177f78c32/tiles/{z}/{x}/{y}",
+      "attribution": "Google Earth Engine / Sentinel-1 SAR + Sentinel-2 NDVI",
+      "min": null,
+      "max": null,
+      "palette": []
+    }
+  },
+  "timeseries": [],
+  "summary": {
+    "green_cover_percent": 64.4,
+    "water_bodies_percent": 0.0,
+    "built_up_area_ha": 76.88,
+    "environmental_score": 73
+  },
+  "buildup": {
+    "method": "sentinel1_sar_ndvi_fusion",
+    "tile_url": "https://earthengine.googleapis.com/v1/projects/n8n-workflows-473615/maps/53c66a4ddb6e860f03ad548b6eb137a2-634468c82fc00210d6f76f1177f78c32/tiles/{z}/{x}/{y}",
+    "vv_change_tile_url": null,
+    "new_built_area_ha": 76.88,
+    "cluster_count": 12,
+    "clusters": [
+      {
+        "lat": 11.611307,
+        "lon": 75.82335,
+        "area_m2": 27756.7
+      },
+      {
+        "lat": 11.564256,
+        "lon": 75.858992,
+        "area_m2": 27663.6
+      },
+      {
+        "lat": 11.638107,
+        "lon": 75.820408,
+        "area_m2": 25799.5
+      },
+      {
+        "lat": 11.635171,
+        "lon": 75.825195,
+        "area_m2": 23161.1
+      },
+      {
+        "lat": 11.562255,
+        "lon": 75.859791,
+        "area_m2": 21505.4
+      },
+      {
+        "lat": 11.627579,
+        "lon": 75.811936,
+        "area_m2": 17591.2
+      },
+      {
+        "lat": 11.658327,
+        "lon": 75.864839,
+        "area_m2": 16221.2
+      },
+      {
+        "lat": 11.636253,
+        "lon": 75.861496,
+        "area_m2": 16027.1
+      },
+      {
+        "lat": 11.580864,
+        "lon": 75.842925,
+        "area_m2": 15639.3
+      },
+      {
+        "lat": 11.632806,
+        "lon": 75.823927,
+        "area_m2": 15636.3
+      },
+      {
+        "lat": 11.609023,
+        "lon": 75.822389,
+        "area_m2": 15246.7
+      },
+      {
+        "lat": 11.608541,
+        "lon": 75.813558,
+        "area_m2": 14171.7
+      }
+    ],
+    "thresholds": {
+      "vv_change_db": 2.0,
+      "ndvi_change": -0.1
+    },
+    "periods": {
+      "before": {
+        "start": "2024-03-01",
+        "end": "2024-03-31"
+      },
+      "after": {
+        "start": "2024-06-01",
+        "end": "2024-06-30"
+      }
+    }
+  },
+  "alerts": [
+    {
+      "level": "medium",
+      "type": "buildup",
+      "title": "Significant Construction Detected",
+      "message": "Detected 76.88 ha of new built-up area between 2024-03 and 2024-06.",
+      "metric": 76.88
+    }
+  ],
+  "metadata": {
+    "before_month": "2024-03",
+    "after_month": "2024-06",
+    "sensor": "Sentinel-1 SAR / Sentinel-2 SR"
+  }
+}
