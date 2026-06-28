@@ -1,49 +1,221 @@
-# GramaDrishti
+# 🌿 HarithaSethu
 
-Python backend for gram panchayat-level satellite intelligence.
+> **Watching Every Change. Protecting Every Panchayat.**
 
-## Run the API
+HarithaSethu is an environmental intelligence platform that helps Gram Panchayats monitor environmental changes using satellite imagery and geospatial analytics. By comparing Sentinel-2 satellite images over time, the platform identifies meaningful environmental changes and presents them through an interactive dashboard, enabling Panchayat officials to make faster, data-driven decisions.
+
+---
+
+## 🚀 The Problem
+
+Panchayats are responsible for protecting forests, water bodies, and public land, but monitoring these resources is still largely manual.
+
+Current challenges include:
+- 🌳 Vegetation loss goes unnoticed.
+- 💧 Water bodies shrink before action is taken.
+- 🏗️ Land-use changes are discovered only after they occur.
+- 👥 Officials rely on citizen complaints and field inspections.
+
+There is no continuous monitoring system to provide timely environmental insights.
+
+---
+
+## 💡 Our Solution
+
+HarithaSethu continuously monitors the Panchayat using Sentinel-2 satellite imagery.
+
+The platform automatically:
+- Compares satellite imagery over time.
+- Detects environmental changes.
+- Highlights affected locations on an interactive map.
+- Generates easy-to-understand environmental reports.
+
+Instead of inspecting the entire Panchayat, officials can focus only on locations where significant changes have been detected.
+
+---
+
+## ✨ Features
+
+- 🛰️ Monthly satellite image comparison
+- 🌳 Green cover monitoring
+- 💧 Water body monitoring
+- 🏗️ Built-up area expansion detection
+- 🗺️ Interactive GIS dashboard
+- 📊 Environmental analytics
+- 🤖 AI-generated environmental summaries
+- 📈 Historical comparison
+
+---
+
+## ⚙️ How It Works
+
+```
+Panchayat Boundary (GeoJSON)
+            │
+            ▼
+Google Earth Engine
+            │
+            ▼
+Sentinel-2 Satellite Images
+            │
+            ▼
+Cloud Filtering
+            │
+            ▼
+Monthly Composite
+            │
+            ▼
+Environmental Analysis
+(NDVI • NDWI • Built-up)
+            │
+            ▼
+Change Detection
+            │
+            ▼
+Interactive Dashboard
+            │
+            ▼
+Environmental Report
+```
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+- React
+- Vite
+- TypeScript
+- Tailwind CSS
+- Leaflet
+- Chart.js
+
+### Backend
+- FastAPI
+- Python
+
+### Geospatial
+- Google Earth Engine
+- Sentinel-2
+- OpenStreetMap
+
+### AI
+- Google Gemini API
+
+---
+
+## 📊 Current Capabilities
+
+- Compare satellite imagery across multiple months
+- Detect vegetation changes
+- Monitor water body variations
+- Identify built-up area expansion
+- Display environmental changes on an interactive dashboard
+- Generate AI-powered environmental summaries
+
+---
+
+## 🏛️ Use Cases
+
+- Gram Panchayats
+- Local Self Government Institutions
+- Environmental Monitoring
+- Land-use Change Detection
+- Water Resource Monitoring
+- Sustainable Planning
+
+---
+
+## 🔮 Future Scope
+
+- 🌳 Digital Tree Registry
+- 📱 Citizen Geo-tagged Reporting
+- 🦌 Wildlife Conflict Monitoring
+- 🚨 Environmental Early Warning System
+- 📊 Ward-wise Environmental Score
+- 🤖 Predictive Environmental Analytics
+- 📲 Mobile Application
+- 🌍 Multi-Panchayat Support
+
+---
+
+## 📂 Project Structure
+
+```
+HarithaSethu/
+│
+├── frontend/
+├── backend/
+├── earth_engine/
+├── geojson/
+├── services/
+├── components/
+├── api/
+├── assets/
+└── docs/
+```
+
+---
+
+## 🚀 Getting Started
+
+### Clone the repository
 
 ```bash
-python3.12 -m venv .venv
-source .venv/bin/activate
+git clone https://github.com/<your-username>/HarithaSethu.git
+```
+
+### Install Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Install Backend
+
+```bash
+cd backend
 pip install -r requirements.txt
-uvicorn backend.main:app --reload
+uvicorn main:app --reload
 ```
 
-The API runs at `http://127.0.0.1:8000`.
+---
 
-## Test the Backend
+## 🌍 Built For
 
-```bash
-python -m unittest discover -v
-```
+**Chakkittapara Grama Panchayat, Kerala**
 
-## Endpoints
+Designed as a scalable platform that can support Gram Panchayats across Kerala.
 
-- `GET /health`
-- `GET /api/indices`
-- `GET /api/tiles`
-- `GET /api/timeseries`
-- `GET /api/report`
-- `GET /api/boundary`
+---
 
-## Run the Frontend
+## 📸 Demo
 
-In a second terminal:
+- Interactive GIS Dashboard
+- Monthly Satellite Comparison
+- Environmental Change Detection
+- AI-generated Reports
 
-```bash
-python3.12 -m http.server 5173 --directory frontend
-```
+> *(Add screenshots and deployment link here.)*
 
-Open `http://127.0.0.1:5173`.
+---
 
-## Generate Earth Engine Data
+## 👥 Team
 
-Authenticate Google Earth Engine first, then run:
+Developed as part of **Solve4Public**.
 
-```bash
-python gee/fetch_change.py
-```
+---
 
-That writes `data/output.json`, which the API reads automatically. Until the file exists, the API serves sample values matching the current project context
+## 📄 License
+
+This project is intended for educational, research, and public innovation purposes.
+
+---
+
+# 🌱 HarithaSethu
+
+### *Watching Every Change. Protecting Every Panchayat.*
+
+> **"HarithaSethu doesn't replace field inspections. It simply tells Panchayats where their attention is needed most. Because better decisions begin with better awareness."**
